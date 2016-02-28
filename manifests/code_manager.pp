@@ -1,22 +1,22 @@
-class pe_git_webhook::code_manager {
+class pe_git_webhook::code_manager (
+  $authenticate_webhook               = hiera('puppet_enterprise::master::code_manager::authenticate_webhook', true),
+  $code_manager_service_user          = 'code_manager_service_user',
+  $token_directory                    = '/etc/puppetlabs/puppetserver/.puppetlabs',
+  $gms_api_token                      = hiera('gms_api_token', undef),
+  $git_management_system              = hiera('git_management_system', undef),
+  $code_manager_ssh_key_file          = '/etc/puppetlabs/puppetserver/code_manager.key',
+  $code_manager_role_name             = 'Deploy Environments'
+  ){
 
-  $authenticate_webhook = hiera('puppet_enterprise::master::code_manager::authenticate_webhook', true)
-
-  $code_manager_service_user = 'code_manager_service_user'
+  $token_filename                     = "${token_directory}/${code_manager_service_user}_token"
   $code_manager_service_user_password = fqdn_rand_string(40, '', "${code_manager_service_user}_password")
+  $create_role_creates_file           = "${token_directory}/deploy_environments_created"
 
   #puppet_master_classifier_settings is a custom function
   $classifier_settings   = puppet_master_classifer_settings()
   $classifier_hostname   = $classifier_settings['server']
   $classifier_port       = $classifier_settings['port']
 
-  $token_directory       = '/etc/puppetlabs/puppetserver/.puppetlabs'
-  $token_filename        = "${token_directory}/${code_manager_service_user}_token"
-
-  $gms_api_token         = hiera('gms_api_token', undef)
-  $git_management_system = hiera('git_management_system', undef)
-
-  $code_manager_ssh_key_file = '/etc/puppetlabs/puppetserver/code_manager.key'
   exec { 'create code manager ssh key' :
     command => "/usr/bin/ssh-keygen -t rsa -b 2048 -C 'code_manager' -f ${code_manager_ssh_key_file} -q -N ''",
     creates => $code_manager_ssh_key_file,
@@ -35,8 +35,6 @@ class pe_git_webhook::code_manager {
     unless  => "/usr/bin/test \$(stat -c %U ${::settings::codedir}/environments/production) = 'pe-puppet'",
   }
 
-  $code_manager_role_name = 'Deploy Environments'
-  $create_role_creates_file = '/etc/puppetlabs/puppetserver/.puppetlabs/deploy_environments_created'
   $create_role_curl = @(EOT)
     /opt/puppetlabs/puppet/bin/curl -k -X POST -H 'Content-Type: application/json' \
     https://<%= $classifier_hostname %>:4433/rbac-api/v1/roles \
