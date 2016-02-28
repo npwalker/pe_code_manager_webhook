@@ -7,7 +7,8 @@ class pe_git_webhook::code_manager (
   $code_manager_ssh_key_file          = '/etc/puppetlabs/puppetserver/code_manager.key',
   $code_manager_role_name             = 'Deploy Environments',
   $manage_git_deploy_key              = true,
-  $manage_git_webhook                 = true
+  $manage_git_webhook                 = true,
+  $control_repo_project_name          = 'puppet/control-repo',
   ){
 
   $token_filename                     = "${token_directory}/${code_manager_service_user}_token"
@@ -133,7 +134,7 @@ class pe_git_webhook::code_manager (
         name         => $::fqdn,
         path         => "${code_manager_ssh_key_file}.pub",
         token        => $gms_api_token,
-        project_name => 'puppet/control-repo',
+        project_name => $control_repo_project_name,
         server_url   => hiera('gms_server_url'),
         provider     => $git_management_system,
       }
@@ -144,7 +145,7 @@ class pe_git_webhook::code_manager (
         ensure             => present,
         webhook_url        => "https://${::fqdn}:8170/code-manager/v1/webhook?type=${code_manager_webhook_type}${token_info}",
         token              => $gms_api_token,
-        project_name       => 'puppet/control-repo',
+        project_name       => $control_repo_project_name,
         server_url         => hiera('gms_server_url'),
         provider           => $git_management_system,
         disable_ssl_verify => true,
