@@ -5,7 +5,9 @@ class pe_git_webhook::code_manager (
   $gms_api_token                      = hiera('gms_api_token', undef),
   $git_management_system              = hiera('git_management_system', undef),
   $code_manager_ssh_key_file          = '/etc/puppetlabs/puppetserver/code_manager.key',
-  $code_manager_role_name             = 'Deploy Environments'
+  $code_manager_role_name             = 'Deploy Environments',
+  $manage_git_deploy_key              = true,
+  $manage_git_webhook                 = true
   ){
 
   $token_filename                     = "${token_directory}/${code_manager_service_user}_token"
@@ -125,24 +127,28 @@ class pe_git_webhook::code_manager (
                                    default  => $git_management_system,
     }
 
-    git_deploy_key { "add_deploy_key_to_puppet_control-${::fqdn}":
-      ensure       => present,
-      name         => $::fqdn,
-      path         => "${code_manager_ssh_key_file}.pub",
-      token        => $gms_api_token,
-      project_name => 'puppet/control-repo',
-      server_url   => hiera('gms_server_url'),
-      provider     => $git_management_system,
+    if $manage_git_deploy_key {
+      git_deploy_key { "add_deploy_key_to_puppet_control-${::fqdn}":
+        ensure       => present,
+        name         => $::fqdn,
+        path         => "${code_manager_ssh_key_file}.pub",
+        token        => $gms_api_token,
+        project_name => 'puppet/control-repo',
+        server_url   => hiera('gms_server_url'),
+        provider     => $git_management_system,
+      }
     }
 
-    git_webhook { "code_manager_post_receive_webhook-${::fqdn}" :
-      ensure             => present,
-      webhook_url        => "https://${::fqdn}:8170/code-manager/v1/webhook?type=${code_manager_webhook_type}${token_info}",
-      token              => $gms_api_token,
-      project_name       => 'puppet/control-repo',
-      server_url         => hiera('gms_server_url'),
-      provider           => $git_management_system,
-      disable_ssl_verify => true,
+    if $manage_git_webhook {
+      git_webhook { "code_manager_post_receive_webhook-${::fqdn}" :
+        ensure             => present,
+        webhook_url        => "https://${::fqdn}:8170/code-manager/v1/webhook?type=${code_manager_webhook_type}${token_info}",
+        token              => $gms_api_token,
+        project_name       => 'puppet/control-repo',
+        server_url         => hiera('gms_server_url'),
+        provider           => $git_management_system,
+        disable_ssl_verify => true,
+      }
     }
   }
 }
