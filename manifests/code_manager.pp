@@ -4,9 +4,10 @@ class pe_git_webhook::code_manager (
   $token_directory                    = '/etc/puppetlabs/puppetserver/.puppetlabs',
   $gms_api_token                      = hiera('gms_api_token', undef),
   $git_management_system              = hiera('git_management_system', undef),
-  $code_manager_ssh_key_file          = '/etc/puppetlabs/puppetserver/code_manager.key',
+  $code_manager_ssh_key_directory     = '/etc/puppetlabs/puppetserver/ssh',
+  $code_manager_ssh_key_file_name     = 'id-control_repo.rsa',
   $code_manager_role_name             = 'Deploy Environments',
-  $manage_git_deploy_key              = true,
+  $create_and_manage_git_deploy_key   = true,
   $manage_git_webhook                 = true,
   $control_repo_project_name          = 'puppet/control-repo',
   ){
@@ -20,16 +21,36 @@ class pe_git_webhook::code_manager (
   $classifier_hostname   = $classifier_settings['server']
   $classifier_port       = $classifier_settings['port']
 
-  exec { 'create code manager ssh key' :
-    command => "/usr/bin/ssh-keygen -t rsa -b 2048 -C 'code_manager' -f ${code_manager_ssh_key_file} -q -N ''",
-    creates => $code_manager_ssh_key_file,
-  }
+  if $create_and_manage_git_deploy_key {
+    file { $code_manager_ssh_key_directory :
+      ensure => directory,
+      owner  => 'pe-puppet',
+      group  => 'pe-puppet',
+    }
 
-  file { $code_manager_ssh_key_file :
-    ensure  => file,
-    owner   => 'pe-puppet',
-    group   => 'pe-puppet',
-    require => Exec['create code manager ssh key'],
+    #backwards compatibility - move the ssh key from the previously suggested location
+    $old_code_manager_ssh_key_file = '/etc/puppetlabs/puppetserver/code_manager.key'
+    $code_manager_ssh_key_file = "${code_manager_ssh_key_directory}/${code_manager_ssh_key_file_name}"
+
+    exec { 'move code manager ssh key to new location' :
+      command => "mv ${old_code_manager_ssh_key_file} ${code_manager_ssh_key_file}",
+      onlyif  => "test -f ${old_code_manager_ssh_key_file}",
+      path    => $::path,
+      require => File[$code_manager_ssh_key_directory],
+    }
+
+    exec { 'create code manager ssh key' :
+      command => "/usr/bin/ssh-keygen -t rsa -b 2048 -C 'code_manager' -f ${code_manager_ssh_key_file} -q -N ''",
+      creates => $code_manager_ssh_key_file,
+      require => Exec['move code manager ssh key to new location'],
+    }
+
+    file { $code_manager_ssh_key_file :
+      ensure  => file,
+      owner   => 'pe-puppet',
+      group   => 'pe-puppet',
+      require => Exec['create code manager ssh key'],
+    }
   }
 
   #If files exist in the codedir code manager can't manage them unless pe-puppet can read them
@@ -128,7 +149,7 @@ class pe_git_webhook::code_manager (
                                    default  => $git_management_system,
     }
 
-    if $manage_git_deploy_key {
+    if $create_and_manage_git_deploy_key {
       git_deploy_key { "add_deploy_key_to_puppet_control-${::fqdn}":
         ensure       => present,
         name         => $::fqdn,

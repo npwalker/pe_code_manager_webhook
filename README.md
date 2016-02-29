@@ -51,19 +51,19 @@ Code Manager or r10k ( which Code Manager is based on ) require ssh authenticati
 
 ## Steps for Configuring SSH Access to your control-repo via this module
 
-1. `/usr/bin/ssh-keygen -t rsa -b 2048 -C 'code_manager' -f /etc/puppetlabs/puppetserver/code_manager.key -q -N ''`
+1. `/usr/bin/ssh-keygen -t rsa -b 2048 -C 'code_manager' -f /etc/puppetlabs/puppetserver/ssh/id-control_repo.rsa -q -N ''`
  - http://doc.gitlab.com/ce/ssh/README.html
  - https://help.github.com/articles/generating-ssh-keys/
 2.  Create a deploy key on the control-repo project in your git server
  - Paste in the public key from above
- - `cat /etc/puppetlabs/puppetserver/code_manager.key.pub`
+ - `cat /etc/puppetlabs/puppetserver/ssh/id-control_repo.rsa.pub`
 3. Login to the PE console
 4. Navigate to the Classification page
  - Click on the PE Master group
  - Click the Classes tab
    - Add the puppet_enterprise::profile::master
      - Set the r10k_remote to the ssh url of your git repo
-     - Set the r10k_private_key parameter to /etc/puppetlabs/puppetserver/code_manager.key
+     - Set the r10k_private_key parameter to /etc/puppetlabs/puppetserver/ssh/id-control_repo.rsa.key
    - Commit your changes
 
 ## Exact Timing and Order of Events
