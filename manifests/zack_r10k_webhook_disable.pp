@@ -1,4 +1,4 @@
-class pe_git_webhook::zack_r10k_webhook_disable {
+class pe_code_manager_webhook::zack_r10k_webhook_disable {
 
   file { '/etc/webhook.yaml' :
     ensure => absent,

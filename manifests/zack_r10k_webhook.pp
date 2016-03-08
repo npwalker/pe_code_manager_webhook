@@ -1,4 +1,4 @@
-class pe_git_webhook::zack_r10k_webhook (
+class pe_code_manager_webhook::zack_r10k_webhook (
   $use_mcollective           = false,
   $username                  = hiera('webhook_username', fqdn_rand_string(10, '', 'username')),
   $password                  = hiera('webhook_password', fqdn_rand_string(20, '', 'password')),

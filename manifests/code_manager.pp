@@ -1,4 +1,4 @@
-class pe_git_webhook::code_manager (
+class pe_code_manager_webhook::code_manager (
   $authenticate_webhook               = hiera('puppet_enterprise::master::code_manager::authenticate_webhook', true),
   $code_manager_service_user          = 'code_manager_service_user',
   $token_directory                    = '/etc/puppetlabs/puppetserver/.puppetlabs',
@@ -95,7 +95,7 @@ class pe_git_webhook::code_manager (
   }
 
   exec { "Generate Token for ${code_manager_service_user}" :
-    command => epp('pe_git_webhook/code_manager/create_rbac_token.epp',
+    command => epp('pe_code_manager_webhook/code_manager/create_rbac_token.epp',
                   { 'code_manager_service_user'          => $code_manager_service_user,
                     'code_manager_service_user_password' => $code_manager_service_user_password,
                     'classifier_hostname'                => $classifier_hostname,
