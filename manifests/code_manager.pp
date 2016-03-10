@@ -15,6 +15,7 @@ class pe_code_manager_webhook::code_manager (
   $token_filename                     = "${token_directory}/${code_manager_service_user}_token"
   $code_manager_service_user_password = fqdn_rand_string(40, '', "${code_manager_service_user}_password")
   $create_role_creates_file           = "${token_directory}/deploy_environments_created"
+  $_gms_api_token                     = pick($gms_api_token, no_fail_file("${token_directory}/gms_api_token"))
 
   #puppet_master_classifier_settings is a custom function
   $classifier_settings   = puppet_master_classifer_settings()
@@ -126,7 +127,7 @@ class pe_code_manager_webhook::code_manager (
     }
   }
 
-  if !empty($gms_api_token) {
+  if !empty($_gms_api_token) {
     if $authenticate_webhook and !empty($rbac_token_file_contents) {
 
       $rbac_token = parsejson($rbac_token_file_contents)['token']
@@ -147,7 +148,7 @@ class pe_code_manager_webhook::code_manager (
         ensure       => present,
         name         => "code manager-${::fqdn}",
         path         => "${code_manager_ssh_key_file}.pub",
-        token        => $gms_api_token,
+        token        => $_gms_api_token,
         project_name => $control_repo_project_name,
         server_url   => hiera('gms_server_url'),
         provider     => $git_management_system,
@@ -158,7 +159,7 @@ class pe_code_manager_webhook::code_manager (
       git_webhook { "code_manager_post_receive_webhook-${::fqdn}" :
         ensure             => present,
         webhook_url        => "https://${::fqdn}:8170/code-manager/v1/webhook?type=${code_manager_webhook_type}${token_info}",
-        token              => $gms_api_token,
+        token              => $_gms_api_token,
         project_name       => $control_repo_project_name,
         server_url         => hiera('gms_server_url'),
         provider           => $git_management_system,
