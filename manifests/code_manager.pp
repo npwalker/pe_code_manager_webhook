@@ -16,8 +16,8 @@ class pe_code_manager_webhook::code_manager (
   $code_manager_service_user_password = fqdn_rand_string(40, '', "${code_manager_service_user}_password")
   $create_role_creates_file           = "${token_directory}/deploy_environments_created"
 
-  #puppet_master_classifier_settings is a custom function
-  $classifier_settings   = puppet_master_classifer_settings()
+  #master_classifier_settings is a custom function
+  $classifier_settings   = master_classifer_settings()
   $classifier_hostname   = $classifier_settings['server']
   $classifier_port       = $classifier_settings['port']
 
