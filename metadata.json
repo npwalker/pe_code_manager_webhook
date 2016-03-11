@@ -1,14 +1,14 @@
 {
   "name": "npwalker/pe_code_manager_webhook",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "npwalker",
   "summary": "A module for configuring Code Manager in Puppet Enterprise",
-  "license": "Apache 2.0",
+  "license": "Apache-2.0",
   "source": "https://github.com/npwalker/pe_code_manager_webhook",
   "project_page": "https://github.com/npwalker/pe_code_manager_webhook",
   "issues_url": "https://github.com/npwalker/pe_code_manager_webhook/issues",
   "dependencies": [
-    {"name":"puppetlabs-stdlib","version_requirement":">= 4.1.0"}
+    {"name":"puppetlabs-stdlib","version_requirement":">= 4.1.0 < 5.0.0"}
   ],
   "operatingsystem_support": [
     {
