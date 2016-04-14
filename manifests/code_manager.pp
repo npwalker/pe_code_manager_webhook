@@ -126,22 +126,29 @@ class pe_code_manager_webhook::code_manager (
     }
   }
 
+
+  if $authenticate_webhook and !empty($rbac_token_file_contents) {
+
+    $rbac_token = parsejson($rbac_token_file_contents)['token']
+    $token_info = "&token=${rbac_token}"
+  }
+  else {
+    $token_info = ''
+  }
+
+  $code_manager_webhook_type = $git_management_system ? {
+                                 'gitlab' => 'github',
+                                 default  => $git_management_system,
+  }
+
+  $webhook_url = "https://${::fqdn}:8170/code-manager/v1/webhook?type=${code_manager_webhook_type}${token_info}"
+
+  file { "${token_directory}/webhook_url.txt" :
+    ensure  => file,
+    content => $webhook_url,
+  }
+
   if !empty($gms_api_token) {
-    if $authenticate_webhook and !empty($rbac_token_file_contents) {
-
-      $rbac_token = parsejson($rbac_token_file_contents)['token']
-
-      $token_info = "&token=${rbac_token}"
-    }
-    else {
-      $token_info = ''
-    }
-
-    $code_manager_webhook_type = $git_management_system ? {
-                                   'gitlab' => 'github',
-                                   default  => $git_management_system,
-    }
-
     if $create_and_manage_git_deploy_key {
       git_deploy_key { "add_deploy_key_to_puppet_control-${::fqdn}":
         ensure       => present,
@@ -157,7 +164,7 @@ class pe_code_manager_webhook::code_manager (
     if $manage_git_webhook {
       git_webhook { "code_manager_post_receive_webhook-${::fqdn}" :
         ensure             => present,
-        webhook_url        => "https://${::fqdn}:8170/code-manager/v1/webhook?type=${code_manager_webhook_type}${token_info}",
+        webhook_url        => $webhook_url,
         token              => $gms_api_token,
         project_name       => $control_repo_project_name,
         server_url         => hiera('gms_server_url'),
