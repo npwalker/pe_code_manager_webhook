@@ -1,86 +1,89 @@
 Table of Contents
 =================
 
-  * [Overview](#overview)
-  * [How To Set It All Up](#how-to-set-it-all-up)
-    * [Enable Code Manager](#enable-code-manager)
-    * [Disable Webhook Auth If Using Gitlab](#disable-webhook-auth-if-using-gitlab)
-  * [Connecting Code Manager / r10k to Your Git Server](#connecting-code-manager--r10k-to-your-git-server)
-    * [Steps for Configuring SSH Access to your control\-repo via this module](#steps-for-configuring-ssh-access-to-your-control-repo-via-this-module)
-    * [Exact Timing and Order of Events](#exact-timing-and-order-of-events)
-  * [Relation to the puppetlabs/control\-repo](#relation-to-the-puppetlabscontrol-repo)
-
-Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc.go)
+* [Overview](#overview)
+* [What Does This Module Provide You?](#what-does-this-module-provide-you)
+* [Easy Button Setup](#easy-button-setup)
+* [Other Notes:](#other-notes)
+  * [Disable Webhook Auth If Using Gitlab Version &lt; 8\.5](#disable-webhook-auth-if-using-gitlab-version--85)
+  * [Relation to the puppetlabs\-rampupprogram/control\-repo](#relation-to-the-puppetlabs-rampupprogramcontrol-repo)
+  * [The Zack/r10k functionality of the Module is Undocumented](#the-zackr10k-functionality-of-the-module-is-undocumented)
 
 # Overview
 
-This module allow for easy setup and configuration of PE code manager in PE2015.3 and above.  If you are using PE 2015.2 then the module will default to installing the zack/r10k webhook.  
+This module allows for easy setup and configuration of PE code manager in PE2015.3 and above.  If you are using PE 2015.2 then the module will default to installing the zack/r10k webhook.
 
 Upon upgrading to 2015.3 the module will uninstall zack/r10k and attempt to use code manager but this requires that you've set the correct parameters in the puppet_enterprise module for it to work.  
 
-This module was originally a very prescriptive profile in the puppetlabs/control-repo but is now here as its own module to make it more widely available.  As a result, you may find that some items are not configurable but we're working on that.  
+This module was originally a very prescriptive profile in the [puppetlabs-rampupprogram/control-repo](https://github.com/PuppetLabs-RampUpProgram/control-repo) but is now here as its own module to make it more widely available.
 
-# How To Set It All Up
+# What Does This Module Provide You?
 
-## Enable Code Manager
+1. A new RBAC role for deploying code ( Deploy Environments )
+2. A new RBAC user for deploying code ( code_manager_service_user )
+3. An infinite liftetime token from the RBAC user for use in a webhook
+4. A newly generated SSH key with the correct permissions to be used by code manager
+ - And for you to setup in your Git server of choice as a deploy key
+5. Correctly chowns the $codedir so that code manager can deploy to it
+6. A file containing the webhook url to paste into your Git UI
+ - Located at `/etc/puppetlabs/puppetserver/.puppetlabs/webhook_url.txt` by default
 
-In order to use code manager ( and thus this module ) you must set the following parameter to true via hiera or the PE console UI.  
+# Easy Button Setup
 
-```
-puppet_enterprise::profile::master::code_manager_auto_configure: true
-```
+1. Enable code manager via the PE Console UI or hiera:
 
-## Disable Webhook Auth If Using Gitlab
+   ```
+   puppet_enterprise::profile::master::code_manager_auto_configure: true
+   ```
 
-If you are using Gitlab as your git UI then you will also need to set the following hiera key to disable authentication to the code manager webhook.  This is because gitlab currently does not allow for webhook urls that are longer than 255 characters while the RBAC token you need to place in the URL is, on its own, longer than 255 characters.  
+2. Run `puppet agent -t`
 
-If you are using an older version of gitlab ( before version 8 ) then you will not have the ability to disable ssl verification either and would need to disable the webhook authentication on code manager. 
+3. Install and run this module:
+
+   ```
+   su - pe-puppet -c "puppet module install npwalker-pe_code_manager_webhook"
+   chown -R pe-puppet:pe-puppet /etc/puppetlabs/code/environments/production/modules/
+   puppet apply -e "include pe_code_manager_webhook"
+   ```
+
+4. Configure a deploy key in your Git server using the SSH key created by the module
+ - You'll paste `cat /etc/puppetlabs/puppetserver/ssh/id-control_repo.rsa.pub`
+5. Login to the PE console
+6. Navigate to the Classification page
+ - Click on the PE Master group
+ - Click the Classes tab
+   - Find the `puppet_enterprise::profile::master` class
+     - Set the `r10k_remote` to the SSH url of your git repo
+     - Set the `r10k_private_key` parameter to `/etc/puppetlabs/puppetserver/ssh/id-control_repo.rsa.key`
+   - Commit your changes
+6. Run `puppet agent -t`
+7. Create a webhook on the control-repo repository in your Git server UI
+ - The URL to connect to code manager is found at `/etc/puppetlabs/puppetserver/.puppetlabs/webhook_url.txt`
+8. Assuming this was a new install with no previous code in the code directory then everything worked.
+If not, try clearing all of the code and redeploying it with code manager
+ - `echo 'code_manager_mv_old_code=true' > /opt/puppetlabs/facter/facts.d/code_manager_mv_old_code.txt; puppet agent -t`
+
+
+
+# Other Notes:
+
+## Disable Webhook Auth If Using Gitlab Version < 8.5
+
+If you are using [Gitlab < 8.5](https://gitlab.com/gitlab-org/gitlab-ce/commit/e80113593c120b71af428ea1b00f11fcdeae58b8) as your git UI then you will also need to set the following hiera key to disable authentication to the code manager webhook.  This is because gitlab currently does not allow for webhook urls that are longer than 255 characters while the RBAC token you need to place in the URL is, on its own, longer than 255 characters.
+
+If you are using an older version of gitlab ( before version 8 ) then you will not have the ability to disable ssl verification either and would need to disable the webhook authentication on code manager.
 ```
 puppet_enterprise::master::code_manager::authenticate_webhook: false
 ```
 
 http://docs.puppetlabs.com/pe/2015.3/release_notes_known_issues_codemgmt.html#turn-off-webhook-authentication-for-gitlab
 
-# Connecting Code Manager / r10k to Your Git Server
+## Relation to the puppetlabs-rampupprogram/control-repo
 
-Code Manager or r10k ( which Code Manager is based on ) require ssh authentication to your git repo.  The basic steps are:
+This module was created as a part of the [puppetlabs-rampupprogram/control-repo](https://github.com/PuppetLabs-RampUpProgram/control-repo) and for the time being the documentation in that control-repo may also serve as a useful supplement to this module.
 
-1.  Create a ssh key
-2.  Make said ssh key a deploy key on your control-repo
-3.  Configure r10k / Code Manager to use this ssh key
+In fact if you are a new user of PE then you may consider using the puppetabs/control repo instead of trying to implement this module on its own.
 
-## Steps for Configuring SSH Access to your control-repo via this module
+## The Zack/r10k functionality of the Module is Undocumented
 
-1. `/usr/bin/ssh-keygen -t rsa -b 2048 -C 'code_manager' -f /etc/puppetlabs/puppetserver/ssh/id-control_repo.rsa -q -N ''`
- - http://doc.gitlab.com/ce/ssh/README.html
- - https://help.github.com/articles/generating-ssh-keys/
-2.  Create a deploy key on the control-repo project in your git server
- - Paste in the public key from above
- - `cat /etc/puppetlabs/puppetserver/ssh/id-control_repo.rsa.pub`
-3. Login to the PE console
-4. Navigate to the Classification page
- - Click on the PE Master group
- - Click the Classes tab
-   - Add the puppet_enterprise::profile::master
-     - Set the r10k_remote to the ssh url of your git repo
-     - Set the r10k_private_key parameter to /etc/puppetlabs/puppetserver/ssh/id-control_repo.rsa.key
-   - Commit your changes
-
-## Exact Timing and Order of Events
-
-In order to enable code manager using this module you need to complete a very specific set of steps in the right order.  
-
-1.  Make sure the code from this module is on your master
- - You could either use a `puppet module install` or maybe an `r10k deploy environmnt -pv`
-2. Enable code manager
- - Set the parameter and run `puppet agent -t`
-3. In order to allow file sync ( a companion to code manager) to deploy code it needs a clean $codedir ( meaning nothing in it )
- - This problem is solved in the puppet code via an exec statement that only runs if you set the following custom fact
-   - `echo 'code_manager_mv_old_code=true' > /opt/puppetlabs/facter/facts.d/code_manager_mv_old_code.txt`
-4. Finally run `puppet agent -t` 2-3 times to make sure all of the configuration completes 
-
-# Relation to the puppetlabs/control-repo
-
-This module was created as a part of the puppetlabs/control-repo and for the time being the documentation in that control-repo may also serve as a useful supplement to this module.  
-
-In fact if you are a new user of PE then you may consider using the puppetabs/control repo instead of trying to implement this module on its own.  
+The purpose of this module is mostly for configuring code manager but the zack/r10k functionality is left in place undocumented.
