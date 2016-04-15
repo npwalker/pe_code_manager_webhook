@@ -3,7 +3,7 @@ class pe_code_manager_webhook::code_manager (
   $code_manager_service_user          = 'code_manager_service_user',
   $token_directory                    = '/etc/puppetlabs/puppetserver/.puppetlabs',
   $gms_api_token                      = hiera('gms_api_token', undef),
-  $git_management_system              = hiera('git_management_system', undef),
+  $git_management_system              = hiera('git_management_system', 'github'),
   $code_manager_ssh_key_directory     = '/etc/puppetlabs/puppetserver/ssh',
   $code_manager_ssh_key_file_name     = 'id-control_repo.rsa',
   $code_manager_role_name             = 'Deploy Environments',
