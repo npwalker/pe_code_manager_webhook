@@ -1,6 +1,6 @@
 class pe_code_manager_webhook (
-  $force_zack_r10k_webhook    = false,
-  $force_code_manager_webhook = false,
+  Boolean $force_zack_r10k_webhook    = false,
+  Boolean $force_code_manager_webhook = false,
 ) {
 
   #Determine if code manager is enabled

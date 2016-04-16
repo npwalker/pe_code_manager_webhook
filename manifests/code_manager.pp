@@ -1,15 +1,15 @@
 class pe_code_manager_webhook::code_manager (
-  $authenticate_webhook               = hiera('puppet_enterprise::master::code_manager::authenticate_webhook', true),
-  $code_manager_service_user          = 'code_manager_service_user',
-  $token_directory                    = '/etc/puppetlabs/puppetserver/.puppetlabs',
-  $gms_api_token                      = hiera('gms_api_token', undef),
-  $git_management_system              = hiera('git_management_system', 'github'),
-  $code_manager_ssh_key_directory     = '/etc/puppetlabs/puppetserver/ssh',
-  $code_manager_ssh_key_file_name     = 'id-control_repo.rsa',
-  $code_manager_role_name             = 'Deploy Environments',
-  $create_and_manage_git_deploy_key   = true,
-  $manage_git_webhook                 = true,
-  $control_repo_project_name          = 'puppet/control-repo',
+  Boolean $authenticate_webhook             = hiera('puppet_enterprise::master::code_manager::authenticate_webhook', true),
+  String  $code_manager_service_user        = 'code_manager_service_user',
+  String  $token_directory                  = '/etc/puppetlabs/puppetserver/.puppetlabs',
+  Optional[String] $gms_api_token           = hiera('gms_api_token', undef),
+  String  $git_management_system            = hiera('git_management_system', 'github'),
+  String  $code_manager_ssh_key_directory   = '/etc/puppetlabs/puppetserver/ssh',
+  String  $code_manager_ssh_key_file_name   = 'id-control_repo.rsa',
+  String  $code_manager_role_name           = 'Deploy Environments',
+  Boolean $create_and_manage_git_deploy_key = true,
+  Boolean $manage_git_webhook               = true,
+  String  $control_repo_project_name        = 'puppet/control-repo',
   ){
 
   $token_filename                     = "${token_directory}/${code_manager_service_user}_token"
