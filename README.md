@@ -41,7 +41,7 @@ This module was originally a very prescriptive profile in the [puppetlabs-rampup
 3. Install and run this module:
 
    ```
-   su - pe-puppet -c "puppet module install npwalker-pe_code_manager_webhook"
+   puppet module install npwalker-pe_code_manager_webhook
    chown -R pe-puppet:pe-puppet /etc/puppetlabs/code/environments/production/modules/
    puppet apply -e "include pe_code_manager_webhook"
    ```

@@ -1,6 +1,6 @@
 {
   "name": "npwalker/pe_code_manager_webhook",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "author": "npwalker",
   "summary": "A module for configuring Code Manager in Puppet Enterprise",
   "license": "Apache-2.0",
