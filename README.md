@@ -30,33 +30,27 @@ This module was originally a very prescriptive profile in the [puppetlabs-rampup
 
 # Easy Button Setup
 
-1. Enable code manager via the PE Console UI or hiera:
-
-   ```
-   puppet_enterprise::profile::master::code_manager_auto_configure: true
-   ```
-
-2. Run `puppet agent -t`
-
-3. Install and run this module:
-
-   ```
-   puppet module install npwalker-pe_code_manager_webhook
-   chown -R pe-puppet:pe-puppet /etc/puppetlabs/code/environments/production/modules/
-   puppet apply -e "include pe_code_manager_webhook"
-   ```
-
-4. Configure a deploy key in your Git server using the SSH key created by the module
- - You'll paste `cat /etc/puppetlabs/puppetserver/ssh/id-control_repo.rsa.pub`
-5. Login to the PE console
-6. Navigate to the Classification page
+1. Login to the PE console
+2. Navigate to the Classification page
  - Click on the PE Master group
  - Click the Classes tab
    - Find the `puppet_enterprise::profile::master` class
-     - Set the `r10k_remote` to the SSH url of your git repo
-     - Set the `r10k_private_key` parameter to `/etc/puppetlabs/puppetserver/ssh/id-control_repo.rsa.key`
+      - Set the `code_manager_auto_configure` to `true`
+      - Set the `r10k_remote` to the SSH url of your git repo
+      - Set the `r10k_private_key` parameter to `/etc/puppetlabs/puppetserver/ssh/id-control_repo.rsa.key`
    - Commit your changes
-6. Run `puppet agent -t`
+
+3. Enable code mananger then install and run this module:
+
+   ~~~
+   puppet agent -t
+   puppet module install npwalker-pe_code_manager_webhook
+   chown -R pe-puppet:pe-puppet /etc/puppetlabs/code/
+   puppet apply -e "include pe_code_manager_webhook::code_manager"
+   ~~~
+
+4. Configure a deploy key in your Git server using the SSH key created by the module
+ - You'll paste `cat /etc/puppetlabs/puppetserver/ssh/id-control_repo.rsa.pub`
 7. Create a webhook on the control-repo repository in your Git server UI
  - The URL to connect to code manager is found at `/etc/puppetlabs/puppetserver/.puppetlabs/webhook_url.txt`
 8. Assuming this was a new install with no previous code in the code directory then everything worked.
