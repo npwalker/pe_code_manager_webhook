@@ -113,16 +113,16 @@ class pe_code_manager_webhook::code_manager (
     $timestamp = chomp(generate('/bin/date', '+%Y%d%m_%H:%M:%S'))
 
     exec { 'mv files out of $environmentpath' :
-      command    => "mkdir /etc/puppetlabs/env_back_${timestamp};
+      command   => "mkdir /etc/puppetlabs/env_back_${timestamp};
                     mv ${::settings::codedir}/environments/* /etc/puppetlabs/env_back_${timestamp}/;
                     rm /opt/puppetlabs/facter/facts.d/code_manager_mv_old_code.txt;
                     TOKEN=`/opt/puppetlabs/puppet/bin/ruby -e \"require 'json'; puts JSON.parse(File.read('${token_filename}'))['token']\"`;
                     /opt/puppetlabs/puppet/bin/curl -k -X POST -H 'Content-Type: application/json' \"https://${::trusted['certname']}:8170/code-manager/v1/deploys?token=\$TOKEN\" -d '{\"environments\": [\"${::environment}\"], \"wait\": true}';
                     /opt/puppetlabs/puppet/bin/curl -k -X POST -H 'Content-Type: application/json' \"https://${::trusted['certname']}:8170/code-manager/v1/deploys?token=\$TOKEN\" -d '{\"deploy-all\": true, \"wait\": true}';
                     sleep 15",
-      path       => $::path,
-      logoutput  => true,
-      require    => Exec["Generate Token for ${code_manager_service_user}"],
+      path      => $::path,
+      logoutput => true,
+      require   => Exec["Generate Token for ${code_manager_service_user}"],
     }
   }
 
