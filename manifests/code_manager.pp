@@ -47,7 +47,7 @@ class pe_code_manager_webhook::code_manager (
   }
 
   #If files exist in the codedir code manager can't manage them unless pe-puppet can read them
-  exec { 'chown all environments to pe-puppet' :
+  exec { 'pe_code_manager_webhook chown all environments to pe-puppet' :
     command => "/bin/chown -R pe-puppet:pe-puppet ${::settings::codedir}",
     unless  => "/usr/bin/test \$(stat -c %U ${::settings::codedir}/environments/production) = 'pe-puppet'",
   }
