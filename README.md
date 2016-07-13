@@ -37,7 +37,7 @@ This module was originally a very prescriptive profile in the [puppetlabs-rampup
    - Find the `puppet_enterprise::profile::master` class
       - Set the `code_manager_auto_configure` to `true`
       - Set the `r10k_remote` to the SSH url of your git repo
-      - Set the `r10k_private_key` parameter to `/etc/puppetlabs/puppetserver/ssh/id-control_repo.rsa.key`
+      - Set the `r10k_private_key` parameter to `/etc/puppetlabs/puppetserver/ssh/id-control_repo.rsa`
    - Commit your changes
 
 3. Enable code mananger then install and run this module:
