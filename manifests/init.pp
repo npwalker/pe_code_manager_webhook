@@ -3,12 +3,8 @@ class pe_code_manager_webhook (
   Boolean $force_code_manager_webhook = false,
 ) {
 
-  #Determine if code manager is enabled
-  #Querying the NC requires the puppetclassify gem and this seems like undue setup burden for a small check at this time
-  #$code_manager_auto_configure_nc_value    = node_groups('PE Master')['PE Master']['classes']['puppet_enterprise::profile::master']['code_manager_auto_configure']
   $code_manager_auto_configure_hiera_value = hiera('puppet_enterprise::profile::master::code_manager_auto_configure', undef)
-  #The NC value will take precedence over the hiera value, if neither is set then it defaults to false
-  $code_manager_auto_configure             = pick($code_manager_auto_configure_nc_value, $code_manager_auto_configure_hiera_value, $force_code_manager_webhook)
+  $code_manager_auto_configure             = pick($code_manager_auto_configure_hiera_value, $force_code_manager_webhook)
 
   if versioncmp( $::pe_server_version, '2015.2.99' ) <= 0 or $force_zack_r10k_webhook {
     include pe_code_manager_webhook::zack_r10k_webhook
