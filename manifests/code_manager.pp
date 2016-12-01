@@ -6,7 +6,10 @@ class pe_code_manager_webhook::code_manager (
   String  $git_management_system            = hiera('git_management_system', 'github'),
   String  $code_manager_ssh_key_directory   = '/etc/puppetlabs/puppetserver/ssh',
   String  $code_manager_ssh_key_file_name   = 'id-control_repo.rsa',
-  String  $code_manager_role_name           = 'Deploy Environments',
+  String  $code_manager_role_name           = versioncmp($::pe_server_version, '2016.5.0') ? {
+                                                -1      => 'Deploy Environments',
+                                                default => 'Code Deployers',
+                                              },
   Boolean $create_and_manage_git_deploy_key = true,
   Boolean $manage_git_webhook               = true,
   String  $control_repo_project_name        = 'puppet/control-repo',
@@ -14,7 +17,6 @@ class pe_code_manager_webhook::code_manager (
 
   $token_filename                     = "${token_directory}/${code_manager_service_user}_token"
   $code_manager_service_user_password = fqdn_rand_string(40, '', "${code_manager_service_user}_password")
-  $create_role_creates_file           = "${token_directory}/deploy_environments_created"
 
   #master_classifier_settings is a custom function
   #2016.5.0 makes classifer.yaml an array of hashes
@@ -23,6 +25,7 @@ class pe_code_manager_webhook::code_manager (
     $classifier_settings = master_classifer_settings()[0]
   } else {
     $classifier_settings = master_classifer_settings()
+    $create_role_creates_file = "${token_directory}/deploy_environments_created"
   }
 
   $classifier_hostname   = $classifier_settings['server']
@@ -59,23 +62,28 @@ class pe_code_manager_webhook::code_manager (
     unless  => "/usr/bin/test \$(stat -c %U ${::settings::codedir}/environments/production) = 'pe-puppet'",
   }
 
-  $create_role_curl = @(EOT)
-    /opt/puppetlabs/puppet/bin/curl -k -X POST -H 'Content-Type: application/json' \
-    https://<%= $classifier_hostname %>:4433/rbac-api/v1/roles \
-    -d '{"permissions": [{"object_type": "environment", "action": "deploy_code", "instance": "*"},
-    {"object_type": "tokens", "action": "override_lifetime", "instance": "*"}],"user_ids": [], "group_ids": [], "display_name": "<%= $code_manager_role_name  %>", "description": ""}' \
-    --cert <%= $::settings::certdir %>/<%= $::trusted['certname'] %>.pem  \
-    --key <%= $::settings::privatekeydir %>/<%= $::trusted['certname'] %>.pem  \
-    --cacert <%= $::settings::certdir %>/ca.pem;
-    touch <%= $create_role_creates_file %>
-    | EOT
+  #Do not create the role in 2016.5 we can use the existing role
+  #and the token override_lifetime permission no longer exists
+  if versioncmp($::pe_server_version, '2016.5.0') < 0 {
+    $create_role_curl = @(EOT)
+      /opt/puppetlabs/puppet/bin/curl -k -X POST -H 'Content-Type: application/json' \
+      https://<%= $classifier_hostname %>:4433/rbac-api/v1/roles \
+      -d '{"permissions": [{"object_type": "environment", "action": "deploy_code", "instance": "*"},
+      {"object_type": "tokens", "action": "override_lifetime", "instance": "*"}],"user_ids": [], "group_ids": [], "display_name": "<%= $code_manager_role_name  %>", "description": ""}' \
+      --cert <%= $::settings::certdir %>/<%= $::trusted['certname'] %>.pem  \
+      --key <%= $::settings::privatekeydir %>/<%= $::trusted['certname'] %>.pem  \
+      --cacert <%= $::settings::certdir %>/ca.pem;
+      touch <%= $create_role_creates_file %>
+      | EOT
 
-  exec { 'create deploy environments role' :
-    command   => inline_epp( $create_role_curl ),
-    creates   => $create_role_creates_file,
-    logoutput => true,
-    path      => $::path,
-    require   => File[$token_directory],
+    exec { 'create deploy environments role' :
+      command   => inline_epp( $create_role_curl ),
+      creates   => $create_role_creates_file,
+      logoutput => true,
+      path      => $::path,
+      require   => File[$token_directory],
+      before    => Rbac_user[$code_manager_service_user],
+    }
   }
 
   rbac_user { $code_manager_service_user :
@@ -85,7 +93,6 @@ class pe_code_manager_webhook::code_manager (
     display_name => 'Code Manager Service Account',
     password     => $code_manager_service_user_password,
     roles        => [ $code_manager_role_name ],
-    require      => Exec['create deploy environments role'],
   }
 
   file { $token_directory :
