@@ -17,7 +17,14 @@ class pe_code_manager_webhook::code_manager (
   $create_role_creates_file           = "${token_directory}/deploy_environments_created"
 
   #master_classifier_settings is a custom function
-  $classifier_settings   = master_classifer_settings()
+  #2016.5.0 makes classifer.yaml an array of hashes
+  #instead of just a hash
+  if versioncmp($::pe_server_version, '2016.5.0') >= 0 {
+    $classifier_settings = master_classifer_settings()[0]
+  } else {
+    $classifier_settings = master_classifer_settings()
+  }
+
   $classifier_hostname   = $classifier_settings['server']
   $classifier_port       = $classifier_settings['port']
 
