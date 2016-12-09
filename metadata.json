@@ -1,6 +1,6 @@
 {
   "name": "npwalker/pe_code_manager_webhook",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "author": "npwalker",
   "summary": "A module for configuring Code Manager in Puppet Enterprise",
   "license": "Apache-2.0",
@@ -9,7 +9,7 @@
   "issues_url": "https://github.com/npwalker/pe_code_manager_webhook/issues",
   "dependencies": [
     {"name":"puppetlabs-stdlib","version_requirement":">= 4.1.0 < 5.0.0"},
-    {"name":"pltraining-rbac","version_requirement":">= 0.0.4 < 0.0.5"},
+    {"name":"pltraining-rbac","version_requirement":">= 0.0.5 < 0.0.6"},
     {"name":"abrader-gms","version_requirement":">= 1.0.2 < 2.0.0"}
   ],
   "operatingsystem_support": [
