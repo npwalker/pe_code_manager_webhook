@@ -1,3 +1,9 @@
+# Configures Code Manager in PE
+#
+# @summary Configures Code Manager in PE
+#
+# @example
+#   include pe_code_manager_webhook::code_manager
 class pe_code_manager_webhook::code_manager (
   Boolean $authenticate_webhook             = hiera('puppet_enterprise::master::code_manager::authenticate_webhook', true),
   String  $code_manager_service_user        = 'code_manager_service_user',
@@ -151,8 +157,8 @@ class pe_code_manager_webhook::code_manager (
   }
 
   $code_manager_webhook_type = $git_management_system ? {
-                                 'gitlab' => 'github',
-                                 default  => $git_management_system,
+                                 'gitlab' => 'github',               # lint:ignore:2sp_soft_tabs
+                                 default  => $git_management_system, # lint:ignore:2sp_soft_tabs
   }
 
   $webhook_url = "https://${::fqdn}:8170/code-manager/v1/webhook?type=${code_manager_webhook_type}${token_info}"

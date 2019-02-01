@@ -1,0 +1,17 @@
+---
+mock_with: ':rspec'
+
+appveyor.yml:
+  delete: true
+.project:
+  delete: true
+.gitlab-ci.yml:
+  delete: true 
+
+spec/default_facts.yml:
+  extra_facts:
+    pe_server_version: 2018.1.0
+
+Rakefile:
+  extra_disabled_lint_checks:
+    - '140chars'

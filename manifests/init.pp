@@ -1,3 +1,9 @@
+# Configures Code Manager in PE
+#
+# @summary Configures Code Manager in PE
+#
+# @example
+#   include pe_code_manager_webhook
 class pe_code_manager_webhook (
   Boolean $force_zack_r10k_webhook    = false,
   Boolean $force_code_manager_webhook = false,
