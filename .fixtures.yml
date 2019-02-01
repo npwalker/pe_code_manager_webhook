@@ -1,0 +1,6 @@
+---
+fixtures:
+  repositories:
+    stdlib: "git://github.com/puppetlabs/puppetlabs-stdlib"
+    pltraining-rbac: "git://github.com/puppetlabs/pltraining-rbac.git"
+    abrader-gms: "git://github.com/abrader/abrader-gms.git"

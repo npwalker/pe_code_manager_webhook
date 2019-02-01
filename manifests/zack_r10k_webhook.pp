@@ -1,3 +1,9 @@
+# A description of what this class does
+#
+# @summary A short summary of the purpose of this class
+#
+# @example
+#   include pe_code_manager_webhook::zack_r10k_webhook
 class pe_code_manager_webhook::zack_r10k_webhook (
   $use_mcollective           = false,
   $username                  = hiera('webhook_username', fqdn_rand_string(10, '', 'username')),

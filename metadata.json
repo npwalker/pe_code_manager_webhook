@@ -1,6 +1,6 @@
 {
-  "name": "npwalker/pe_code_manager_webhook",
-  "version": "2.0.1",
+  "name": "npwalker-pe_code_manager_webhook",
+  "version": "2.0.2",
   "author": "npwalker",
   "summary": "A module for configuring Code Manager in Puppet Enterprise",
   "license": "Apache-2.0",
@@ -8,9 +8,18 @@
   "project_page": "https://github.com/npwalker/pe_code_manager_webhook",
   "issues_url": "https://github.com/npwalker/pe_code_manager_webhook/issues",
   "dependencies": [
-    {"name":"puppetlabs-stdlib","version_requirement":">= 4.1.0 < 5.0.0"},
-    {"name":"pltraining-rbac","version_requirement":">= 0.0.5 < 0.0.6"},
-    {"name":"abrader-gms","version_requirement":">= 1.0.2 < 2.0.0"}
+    {
+      "name": "puppetlabs-stdlib",
+      "version_requirement": ">= 4.1.0 < 6.0.0"
+    },
+    {
+      "name": "pltraining-rbac",
+      "version_requirement": ">= 0.0.5 < 0.0.6"
+    },
+    {
+      "name": "abrader-gms",
+      "version_requirement": ">= 1.0.2 < 2.0.0"
+    }
   ],
   "operatingsystem_support": [
     {
@@ -63,8 +72,11 @@
   ],
   "requirements": [
     {
-      "name": "pe",
-      "version_requirement": ">= 2015.3.0"
+      "name": "puppet",
+      "version_requirement": ">= 4.0"
     }
-  ]
+  ],
+  "pdk-version": "1.10.0.pre (heads/master-0-g553e6e0)",
+  "template-url": "https://github.com/puppetlabs/pdk-templates",
+  "template-ref": "tags/1.9.0-0-g7281db5"
 }
